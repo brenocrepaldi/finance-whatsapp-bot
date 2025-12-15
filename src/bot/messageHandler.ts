@@ -82,7 +82,7 @@ export class MessageHandler {
     try {
       switch (type) {
         case 'hoje':
-          return await this.sheetUpdater.getDayReport(new Date());
+          return await this.sheetUpdater.getDayReport(DateHelper.getBrasiliaTime());
         case 'semana':
           return await this.sheetUpdater.getWeekReport();
         case 'mes':

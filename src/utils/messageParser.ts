@@ -125,7 +125,7 @@ export class MessageParser {
     }
 
     // Padrão: hoje
-    return new Date();
+    return DateHelper.getBrasiliaTime();
   }
 
   /**
@@ -165,7 +165,7 @@ export class MessageParser {
     if (['performance', 'comparar', 'previsao'].includes(type)) {
       return {
         type: type as 'performance' | 'comparar' | 'previsao',
-        date: new Date(),
+        date: DateHelper.getBrasiliaTime(),
         rawText: trimmed
       };
     }
@@ -176,7 +176,7 @@ export class MessageParser {
       if (targetDate) {
         return {
           type: 'saldo',
-          date: new Date(),
+          date: DateHelper.getBrasiliaTime(),
           rawText: trimmed,
           targetDate
         };
@@ -187,7 +187,7 @@ export class MessageParser {
     if (['hoje', 'semana', 'mes'].includes(type)) {
       return {
         type: type as 'hoje' | 'semana' | 'mes',
-        date: new Date(),
+        date: DateHelper.getBrasiliaTime(),
         rawText: trimmed
       };
     }

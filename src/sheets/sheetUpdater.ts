@@ -304,7 +304,7 @@ ${this.getSaldoEmoji(data.saldo)} ${this.getSaldoMessage(data.saldo)}
    * Gera relatório semanal
    */
   async getWeekReport(): Promise<string> {
-    const today = new Date();
+    const today = DateHelper.getBrasiliaTime();
     const days: DayData[] = [];
     let totalEntradas = 0;
     let totalSaidas = 0;
@@ -350,7 +350,7 @@ ${this.getSaldoEmoji(data.saldo)} ${this.getSaldoMessage(data.saldo)}
    * Gera relatório mensal
    */
   async getMonthReport(): Promise<string> {
-    const today = new Date();
+    const today = DateHelper.getBrasiliaTime();
     const month = today.getMonth() + 1;
     const year = today.getFullYear();
     const config = this.getSheetConfig(month, year);
