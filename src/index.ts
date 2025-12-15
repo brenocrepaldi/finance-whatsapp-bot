@@ -6,6 +6,53 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 /**
+ * Intercepta e filtra erros conhecidos do console
+ */
+const originalConsoleError = console.error;
+console.error = (...args: any[]) => {
+	const message = args.join(' ');
+	
+	// Suprime erros conhecidos de criptografia do WhatsApp
+	if (
+		message.includes('Bad MAC') ||
+		message.includes('Failed to decrypt') ||
+		message.includes('Session error') ||
+		message.includes('Closing session') ||
+		message.includes('verifyMAC') ||
+		message.includes('doDecryptWhisperMessage') ||
+		message.includes('SessionCipher') ||
+		message.includes('libsignal')
+	) {
+		return; // Não imprime
+	}
+	
+	// Outros erros são impressos normalmente
+	originalConsoleError.apply(console, args);
+};
+
+// Intercepta stderr para suprimir erros da biblioteca
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+(process.stderr.write as any) = (chunk: any, encoding?: any, callback?: any) => {
+	const message = chunk.toString();
+	
+	// Suprime erros conhecidos
+	if (
+		message.includes('Bad MAC') ||
+		message.includes('Failed to decrypt') ||
+		message.includes('Session error') ||
+		message.includes('Closing session') ||
+		message.includes('verifyMAC') ||
+		message.includes('doDecryptWhisperMessage') ||
+		message.includes('SessionCipher') ||
+		message.includes('libsignal')
+	) {
+		return true;
+	}
+	
+	return originalStderrWrite(chunk, encoding, callback);
+};
+
+/**
  * Ponto de entrada da aplicação
  */
 async function main() {
