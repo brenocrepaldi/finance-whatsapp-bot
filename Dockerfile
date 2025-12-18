@@ -51,11 +51,8 @@ RUN npm ci --omit=dev
 # Copia código compilado do stage anterior
 COPY --from=builder /app/dist ./dist
 
-# Cria diretório para sessão do WhatsApp
-RUN mkdir -p /app/auth
+# Expõe porta do servidor web
+EXPOSE 3000
 
-# Expõe porta (opcional, o bot não usa servidor HTTP)
-# EXPOSE 3000
-
-# Comando para iniciar o bot
-CMD ["node", "dist/index.js"]
+# Comando para iniciar o servidor
+CMD ["node", "dist/server.js"]
