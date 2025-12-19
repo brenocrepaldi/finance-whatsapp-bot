@@ -72,19 +72,18 @@ io.on('connection', (socket) => {
 
   console.log('✅ Cliente autenticado:', socket.id);
 
-  // Envia mensagem de boas-vindas
-  socket.emit('bot-message', {
-    id: Date.now().toString(),
-    text: '🤖 Bot de Controle Financeiro conectado! Digite "ajuda" ou "?" para ver os comandos disponíveis.',
-    sender: 'bot',
-    timestamp: new Date().toISOString()
-  });
-
   // Recebe mensagem do usuário
   socket.on('user-message', async (data: { text: string }) => {
     console.log('📨 Mensagem recebida:', data.text);
 
     try {
+      // Comando especial: limpar chat
+      if (data.text.toLowerCase().trim() === 'clear') {
+        socket.emit('clear-chat');
+        console.log('🧹 Chat limpo');
+        return;
+      }
+
       // Processa a mensagem
       const response = await messageHandler.handleMessage(data.text);
 

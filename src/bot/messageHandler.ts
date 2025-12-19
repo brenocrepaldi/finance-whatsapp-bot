@@ -7,114 +7,120 @@ import { UpdateRequest } from '../types';
  * Processa mensagens recebidas e executa ações correspondentes
  */
 export class MessageHandler {
-  private sheetUpdater: SheetUpdater;
+	private sheetUpdater: SheetUpdater;
 
-  constructor() {
-    this.sheetUpdater = new SheetUpdater();
-  }
+	constructor() {
+		this.sheetUpdater = new SheetUpdater();
+	}
 
-  /**
-   * Processa uma mensagem e retorna a resposta
-   */
-  async handleMessage(message: string): Promise<string> {
-    try {
-      // Faz parse da mensagem
-      const parsed = MessageParser.parse(message);
+	/**
+	 * Processa uma mensagem e retorna a resposta
+	 */
+	async handleMessage(message: string): Promise<string> {
+		try {
+			// Faz parse da mensagem
+			const parsed = MessageParser.parse(message);
 
-      if (!parsed) {
-        return this.getHelpMessage();
-      }
+			if (!parsed) {
+				return `⚠️ Comando não reconhecido.
 
-      // Comandos especiais
-      if (parsed.type === 'performance') {
-        return await this.sheetUpdater.getPerformanceReport();
-      }
+💡 Digite "ajuda" para ver os
+   comandos disponíveis.`;
+			}
 
-      if (parsed.type === 'comparar') {
-        return await this.sheetUpdater.getComparisonReport();
-      }
+			// Comando de ajuda
+			if (parsed.type === 'ajuda') {
+				return this.getHelpMessage();
+			}
 
-      if (parsed.type === 'previsao') {
-        return await this.sheetUpdater.getForecastReport();
-      }
+			// Comandos especiais
+			if (parsed.type === 'performance') {
+				return await this.sheetUpdater.getPerformanceReport();
+			}
 
-      // Comando "saldo dd/mm"
-      if (parsed.type === 'saldo' && parsed.targetDate) {
-        return await this.sheetUpdater.getDayReport(parsed.targetDate);
-      }
+			if (parsed.type === 'comparar') {
+				return await this.sheetUpdater.getComparisonReport();
+			}
 
-      // Se é comando de consulta (saldo/resumo)
-      if (['hoje', 'semana', 'mes'].includes(parsed.type)) {
-        return await this.handleQueryCommand(parsed.type as 'hoje' | 'semana' | 'mes');
-      }
+			if (parsed.type === 'previsao') {
+				return await this.sheetUpdater.getForecastReport();
+			}
 
-      // Se é comando de atualização (entrada/saída/diário)
-      // Extrai informações da data
-      const day = DateHelper.getDay(parsed.date);
-      const month = DateHelper.getMonth(parsed.date);
-      const year = DateHelper.getYear(parsed.date);
+			// Comando "saldo dd/mm"
+			if (parsed.type === 'saldo' && parsed.targetDate) {
+				return await this.sheetUpdater.getDayReport(parsed.targetDate);
+			}
 
-      // Monta requisição de atualização
-      const updateRequest: UpdateRequest = {
-        type: parsed.type as 'entrada' | 'saida' | 'diario',
-        value: parsed.value!,
-        day,
-        month,
-        year,
-        shouldReplace: parsed.shouldReplace || false
-      };
+			// Se é comando de consulta (saldo/resumo)
+			if (['hoje', 'semana', 'mes'].includes(parsed.type)) {
+				return await this.handleQueryCommand(parsed.type as 'hoje' | 'semana' | 'mes');
+			}
 
-      // Atualiza planilha
-      const response = await this.sheetUpdater.updateValue(updateRequest);
+			// Se é comando de atualização (entrada/saída/diário)
+			// Extrai informações da data
+			const day = DateHelper.getDay(parsed.date);
+			const month = DateHelper.getMonth(parsed.date);
+			const year = DateHelper.getYear(parsed.date);
 
-      return response.message;
+			// Monta requisição de atualização
+			const updateRequest: UpdateRequest = {
+				type: parsed.type as 'entrada' | 'saida' | 'diario',
+				value: parsed.value!,
+				day,
+				month,
+				year,
+				shouldReplace: parsed.shouldReplace || false,
+			};
 
-    } catch (error) {
-      console.error('Erro ao processar mensagem:', error);
-      return `⚠️ Ops! Algo deu errado.
+			// Atualiza planilha
+			const response = await this.sheetUpdater.updateValue(updateRequest);
+
+			return response.message;
+		} catch (error) {
+			console.error('Erro ao processar mensagem:', error);
+			return `⚠️ Ops! Algo deu errado.
 
 Não consegui processar sua
 mensagem.
 
 💡 Digite "ajuda" para ver
    os comandos disponíveis.`;
-    }
-  }
+		}
+	}
 
-  /**
-   * Processa comandos de consulta (saldo, resumo)
-   */
-  private async handleQueryCommand(type: 'hoje' | 'semana' | 'mes'): Promise<string> {
-    try {
-      switch (type) {
-        case 'hoje':
-          return await this.sheetUpdater.getDayReport(DateHelper.getBrasiliaTime());
-        case 'semana':
-          return await this.sheetUpdater.getWeekReport();
-        case 'mes':
-          return await this.sheetUpdater.getCompleteMonthReport();
-        default:
-          return '⚠️ Comando não reconhecido.';
-      }
-    } catch (error) {
-      console.error('Erro ao processar consulta:', error);
-      return `⚠️ Erro ao buscar dados.
+	/**
+	 * Processa comandos de consulta (saldo, resumo)
+	 */
+	private async handleQueryCommand(type: 'hoje' | 'semana' | 'mes'): Promise<string> {
+		try {
+			switch (type) {
+				case 'hoje':
+					return await this.sheetUpdater.getDayReport(DateHelper.getBrasiliaTime());
+				case 'semana':
+					return await this.sheetUpdater.getWeekReport();
+				case 'mes':
+					return await this.sheetUpdater.getCompleteMonthReport();
+				default:
+					return '⚠️ Comando não reconhecido.';
+			}
+		} catch (error) {
+			console.error('Erro ao processar consulta:', error);
+			return `⚠️ Erro ao buscar dados.
 
 Tente novamente em alguns
 instantes ou digite "ajuda"
 para ver os comandos.`;
-    }
-  }
+		}
+	}
 
-  /**
-   * Retorna mensagem de ajuda
-   */
-  private getHelpMessage(): string {
-    return `
---- 💰 CONTROLE FINANCEIRO ---
+	/**
+	 * Retorna mensagem de ajuda
+	 */
+	private getHelpMessage(): string {
+		return `
+━━ 💰 CONTROLE FINANCEIRO ━━
 
---- 📝 REGISTRAR VALORES ---
-
+━━━ 📝 REGISTRAR VALORES ━━━
 🔹 ADICIONAR (soma ao existente)
    • diario 87,10
    • entrada 200 hoje
@@ -126,9 +132,7 @@ para ver os comandos.`;
    • sub entrada 500
    • sub saida 100 16/12
 
-
------- 📊 CONSULTAS ------
-
+━━━━━ 📊 CONSULTAS ━━━━━
 🔍 Resumos Rápidos:
    • saldo → Hoje
    • saldo 16/12 → Data específica
@@ -140,27 +144,24 @@ para ver os comandos.`;
    • comparar → Mês atual vs anterior
    • previsao → Projeção de fim de mês
 
-
------- 📅 FORMATO DATAS ------
-
+━━━━ 📅 FORMATO DATAS ━━━━
    ✓ hoje
+   ✓ ontem
    ✓ amanha
    ✓ 25/12
    ✓ 25/12/2024
 
-
------- 💡 DICAS ------
-
+━━━━━━ 💡 DICAS ━━━━━━
    ⚡ Sem "sub" → SOMA valores
    ⚡ Com "sub" → SUBSTITUI valores
    ⚡ Use "mes" para relatório completo!
     `.trim();
-  }
+	}
 
-  /**
-   * Valida se a mensagem é um comando
-   */
-  isValidCommand(message: string): boolean {
-    return MessageParser.isValidCommand(message);
-  }
+	/**
+	 * Valida se a mensagem é um comando
+	 */
+	isValidCommand(message: string): boolean {
+		return MessageParser.isValidCommand(message);
+	}
 }

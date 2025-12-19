@@ -30,11 +30,14 @@ export class MessageParser {
   /**
    * Detecta o tipo de operação (entrada, saída, diário ou consulta)
    */
-  private static detectType(text: string): 'entrada' | 'saida' | 'diario' | 'saldo' | 'resumo' | 'hoje' | 'semana' | 'mes' | 'performance' | 'comparar' | 'previsao' {
+  private static detectType(text: string): 'entrada' | 'saida' | 'diario' | 'saldo' | 'resumo' | 'hoje' | 'semana' | 'mes' | 'performance' | 'comparar' | 'previsao' | 'ajuda' | null {
     const lower = text.toLowerCase();
     
     // Remove "sub" do texto para análise (será tratado separadamente)
     const cleanText = lower.replace(/^sub\s+/, '');
+    
+    // Comando de ajuda
+    if (cleanText.match(/^(ajuda|help|\?)$/)) return 'ajuda';
     
     // Novos comandos especiais
     if (cleanText.match(/^(performance|desempenho)$/)) return 'performance';
@@ -42,13 +45,17 @@ export class MessageParser {
     if (cleanText.match(/^(previsao|previsão|projecao|projeção|forecast)$/)) return 'previsao';
     
     // Comandos de consulta de saldo com data específica
-    // Exemplo: "saldo 16/12" ou "saldo hoje" ou "resumo 25/12"
+    // Exemplo: "saldo 16/12" ou "saldo hoje" ou "resumo 25/12" ou "saldo ontem" ou "saldo amanha"
     if (cleanText.match(/^(saldo|resumo|extrato)\s+\d{1,2}\/\d{1,2}/)) return 'saldo';
+    if (cleanText.match(/^(saldo|resumo|extrato)\s+(ontem|amanha|amanhã)$/)) return 'saldo';
     
     // Comandos de consulta (sem valor)
     if (cleanText.match(/^(saldo|resumo|extrato)\s*(hoje|hj)?$/)) return 'hoje';
-    if (cleanText.match(/^(saldo|resumo|extrato)\s*(semana|semanal)$/)) return 'semana';
-    if (cleanText.match(/^(saldo|resumo|extrato)\s*(mes|mês|mensal)$/)) return 'mes';
+    if (cleanText.match(/^(hoje|hj)$/)) return 'hoje';
+    if (cleanText.match(/^(ontem)$/)) return 'saldo';
+    if (cleanText.match(/^(amanha|amanhã)$/)) return 'saldo';
+    if (cleanText.match(/^(saldo|resumo|extrato)?\s*(semana|semanal)$/)) return 'semana';
+    if (cleanText.match(/^(saldo|resumo|extrato)?\s*(mes|mês|mensal)$/)) return 'mes';
     
     // Comandos de atualização (com valor)
     if (cleanText.includes('entrada')) return 'entrada';
@@ -57,8 +64,8 @@ export class MessageParser {
     // Se tem só número, é diário
     if (/^\d+([,.]\d{1,2})?\s*(hoje|amanha|amanhã|\d{1,2}\/\d{1,2})?$/.test(cleanText)) return 'diario';
     
-    // Padrão: diário
-    return 'diario';
+    // Não reconhecido
+    return null;
   }
 
   /**
@@ -69,13 +76,21 @@ export class MessageParser {
   }
 
   /**
-   * Extrai data específica de comandos como "saldo 16/12"
+   * Extrai data específica de comandos como "saldo 16/12", "saldo ontem", "saldo amanha"
    */
   private static extractTargetDate(text: string): Date | undefined {
-    const match = text.match(/(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/);
-    if (match) {
-      return DateHelper.parseDate(match[1]);
+    // Tenta primeiro palavras-chave (ontem, amanha)
+    const keywordMatch = text.match(/\b(ontem|amanha|amanhã)\b/);
+    if (keywordMatch) {
+      return DateHelper.parseDate(keywordMatch[1]);
     }
+    
+    // Tenta formato de data dd/mm/aaaa
+    const dateMatch = text.match(/(\d{1,2}\/\d{1,2}(?:\/\d{2,4})?)/);
+    if (dateMatch) {
+      return DateHelper.parseDate(dateMatch[1]);
+    }
+    
     return undefined;
   }
 
@@ -111,6 +126,11 @@ export class MessageParser {
     // Procura por "hoje"
     if (lower.includes('hoje')) {
       return DateHelper.parseDate('hoje');
+    }
+
+    // Procura por "ontem"
+    if (lower.includes('ontem')) {
+      return DateHelper.parseDate('ontem');
     }
 
     // Procura por "amanha" ou "amanhã"
@@ -160,6 +180,20 @@ export class MessageParser {
 
     // Detecta o tipo
     const type = this.detectType(cleanMessage);
+
+    // Se não reconheceu o comando, retorna null
+    if (type === null) {
+      return null;
+    }
+
+    // Se é comando de ajuda
+    if (type === 'ajuda') {
+      return {
+        type: 'ajuda',
+        date: DateHelper.getBrasiliaTime(),
+        rawText: trimmed
+      };
+    }
 
     // Se é comando de consulta especial (performance, comparar, previsão)
     if (['performance', 'comparar', 'previsao'].includes(type)) {

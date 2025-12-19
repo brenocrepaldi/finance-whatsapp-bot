@@ -17,7 +17,7 @@ export class DateHelper {
 
   /**
    * Interpreta texto de data e retorna um objeto Date
-   * Aceita: "hoje", "amanha", "dd/mm", "dd/mm/aaaa"
+   * Aceita: "hoje", "ontem", "amanha", "dd/mm", "dd/mm/aaaa"
    * Usa horário de Brasília
    */
   static parseDate(dateText: string): Date {
@@ -27,6 +27,13 @@ export class DateHelper {
     // Caso: "hoje"
     if (normalized === 'hoje') {
       return now;
+    }
+
+    // Caso: "ontem"
+    if (normalized === 'ontem') {
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday;
     }
 
     // Caso: "amanha" ou "amanhã"
