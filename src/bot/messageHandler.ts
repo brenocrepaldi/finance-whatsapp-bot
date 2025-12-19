@@ -113,7 +113,7 @@ para ver os comandos.`;
     return `
 --- 💰 CONTROLE FINANCEIRO ---
 
------- 📝 REGISTRAR VALORES ------
+--- 📝 REGISTRAR VALORES ---
 
 🔹 ADICIONAR (soma ao existente)
    • diario 87,10
