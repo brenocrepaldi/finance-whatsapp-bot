@@ -89,3 +89,13 @@ export interface MonthSummary {
 	diasComDados: number;
 	mediaDiaria: number;
 }
+
+/**
+ * Estatísticas do serviço de IA
+ */
+export interface AIStats {
+	isEnabled: boolean;
+	provider: 'gemini';
+	activeConversations: number;
+	model: string;
+}

@@ -2,30 +2,38 @@ import { MessageParser } from '../utils/messageParser';
 import { DateHelper } from '../utils/dateHelper';
 import { SheetUpdater } from '../sheets/sheetUpdater';
 import { UpdateRequest } from '../types';
+import { AIService } from '../ai/aiService';
 
 /**
  * Processa mensagens recebidas e executa ações correspondentes
  */
 export class MessageHandler {
 	private sheetUpdater: SheetUpdater;
+	private aiService: AIService;
 
 	constructor() {
 		this.sheetUpdater = new SheetUpdater();
+		this.aiService = new AIService();
+		
+		// Log do status da IA
+		if (this.aiService.isActive()) {
+			const stats = this.aiService.getStats();
+			console.log(`🤖 IA ativada - Modelo: ${stats.model}`);
+		}
 	}
 
 	/**
 	 * Processa uma mensagem e retorna a resposta
 	 */
-	async handleMessage(message: string): Promise<string> {
+	async handleMessage(message: string, chatId?: string): Promise<string> {
 		try {
 			// Faz parse da mensagem
 			const parsed = MessageParser.parse(message);
 
 			if (!parsed) {
-				return `⚠️ Comando não reconhecido.
-
-💡 Digite "ajuda" para ver os
-   comandos disponíveis.`;
+				// Se não reconheceu o comando, usa a IA
+				console.log('🤖 Comando não reconhecido, acionando IA...');
+				return await this.aiService.generateResponse(message, chatId || 'default');
 			}
 
 			// Comando de ajuda

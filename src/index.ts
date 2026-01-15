@@ -105,8 +105,8 @@ async function main() {
 		const onMessage = async (from: string, message: string) => {
 			console.log(`\n📨 Processando mensagem de ${from}`);
 
-			// Processa mensagem
-			const response = await messageHandler.handleMessage(message);
+			// Processa mensagem (passa chatId para contexto da IA)
+			const response = await messageHandler.handleMessage(message, from);
 
 			// Envia resposta
 			await bot.sendMessage(from, response);
