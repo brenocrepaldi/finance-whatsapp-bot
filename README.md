@@ -6,6 +6,7 @@ Bot de WhatsApp integrado com Google Sheets para controle financeiro automatizad
 
 - ✅ Integração completa com WhatsApp via Baileys
 - ✅ Conexão com Google Sheets API
+- ✅ **🤖 IA integrada (Google Gemini - Grátis) para respostas inteligentes**
 - ✅ Parser inteligente de mensagens
 - ✅ Suporte a valores em formato brasileiro (vírgula e ponto)
 - ✅ Reconhecimento de datas naturais (hoje, amanhã, dd/mm)
@@ -13,12 +14,15 @@ Bot de WhatsApp integrado com Google Sheets para controle financeiro automatizad
 - ✅ Sessão persistente (não precisa escanear QR toda vez)
 - ✅ Reconexão automática
 - ✅ Mensagens de confirmação
+- ✅ Conversas naturais com contexto (IA lembra das últimas interações)
 
 ## 📁 Estrutura do Projeto
 
 ```
 finance-bot/
 ├── src/
+│   ├── ai/
+│   │   └── aiService.ts          # Serviço de IA (OpenAI)
 │   ├── bot/
 │   │   ├── whatsapp.ts          # Gerenciador Baileys
 │   │   └── messageHandler.ts     # Processador de mensagens
@@ -94,6 +98,10 @@ GOOGLE_PROJECT_ID=seu-projeto-id
 GOOGLE_CLIENT_EMAIL=seu-email@seu-projeto.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nSUA_CHAVE_PRIVADA_AQUI\n-----END PRIVATE KEY-----\n"
 SHEET_ID=seu-id-da-planilha-google
+
+# Opcional: Configure a IA para respostas inteligentes (Google Gemini - Grátis)
+GEMINI_API_KEY=sua-gemini-api-key-aqui
+GEMINI_MODEL=gemini-1.5-pro
 ```
 
 **Como obter o SHEET_ID:**
@@ -105,7 +113,40 @@ SHEET_ID=seu-id-da-planilha-google
 - Mantenha as aspas duplas
 - Mantenha os `\n` (quebras de linha)
 
-### 5. Execute o bot
+### 5. (Opcional) Configure a IA
+
+O bot suporta respostas inteligentes com **Google Gemini** (totalmente gratuito).
+
+#### 🧠 Google Gemini - GRÁTIS
+
+**Por que Gemini:**
+- ✅ **Totalmente grátis** para uso pessoal
+- 🌟 Modelo do Google (alta qualidade)
+- 📊 **Tier gratuito**: 2 requisições/minuto, 50 requisições/dia
+- 🧠 Gemini 1.5 Pro - mais inteligente
+- ☁️ **Funciona perfeitamente no Render** (não requer recursos locais)
+
+**Como configurar:**
+
+1. Acesse [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Crie/faça login com sua conta Google
+3. Clique em "Create API Key"
+4. Copie a chave gerada
+5. Adicione no arquivo `.env`:
+   ```env
+   GEMINI_API_KEY=AIza...sua-chave-aqui...
+   GEMINI_MODEL=gemini-1.5-pro
+   ```
+
+**Modelos disponíveis:**
+- `gemini-1.5-pro` - **Recomendado** (mais inteligente, estável)
+- `gemini-1.5-flash` - Mais rápido, menos limites
+
+---
+
+**💡 Nota:** Se não configurar a IA, o bot funcionará normalmente respondendo apenas aos comandos financeiros pré-programados.
+
+### 6. Execute o bot
 
 #### Modo desenvolvimento (com hot reload):
 
@@ -131,7 +172,36 @@ npm start
 5. Escaneie o QR Code
 6. Pronto! A sessão ficará salva na pasta `auth/`
 
-### Comandos
+### 🤖 Conversando com a IA
+
+Quando a IA está configurada, o bot responde inteligentemente a mensagens que não são comandos:
+
+**Exemplos de conversas:**
+
+```
+Você: oi
+Bot: Oi! 😊 Tudo bem? Estou aqui pra te ajudar com suas finanças ou bater um papo!
+
+Você: gastei 432 reais hoje
+Bot: Entendi que você gastou R$ 432 hoje! Para registrar isso, use:
+💸 saida 432
+ou
+🍽️ diario 432
+Depende se é uma saída específica ou gasto diário. Digite 'ajuda' pra ver todos os comandos! ✨
+
+Você: como economizar dinheiro?
+Bot: Ótima pergunta! 💰 Algumas dicas rápidas:
+✓ Registre TODOS os gastos (use o comando 'diario')
+✓ Confira o 'resumo mes' regularmente
+✓ Use 'performance' pra ver se está economizando
+```
+
+**Contexto de conversa:**
+- A IA lembra das últimas 10 mensagens de cada chat
+- Contexto é mantido por 30 minutos de inatividade
+- Cada usuário/grupo tem seu próprio contexto
+
+### Comandos Financeiros
 
 #### Adicionar no DIÁRIO
 

@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "start:whatsapp": "node dist/index.js",
     "clean": "rm -rf dist",
-    "test:sheets": "ts-node src/tests/test-sheets.ts"
+    "test:sheets": "ts-node src/tests/test-sheets.ts",
+    "test:ai": "ts-node src/tests/test-ai.ts"
   },
   "keywords": [
     "whatsapp",
@@ -23,6 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
+    "@google/generative-ai": "^0.24.1",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.7.0",
     "cors": "^2.8.5",

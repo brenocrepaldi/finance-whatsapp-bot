@@ -84,8 +84,8 @@ io.on('connection', (socket) => {
         return;
       }
 
-      // Processa a mensagem
-      const response = await messageHandler.handleMessage(data.text);
+      // Processa a mensagem (usa socket.id como chatId para contexto da IA)
+      const response = await messageHandler.handleMessage(data.text, socket.id);
 
       // Envia resposta do bot
       socket.emit('bot-message', {
